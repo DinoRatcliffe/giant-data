@@ -10,15 +10,24 @@
                 pointer-events: none;
                 font: 10px sans-serif;
             }
+
+            form {
+                position: fixed;
+            }
+
+            body {
+                margin: 0;
+            }
+
+            svg {
+                margin: -.1em;
+            }
         </style>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
         <script src="http://d3js.org/d3.v3.min.js"></script>
         <script>
             //GIANT BOMB DATA GATHERING//
             var apiKey = '9f81a391077ec72ad493084abc747a5c19ea2d06';
-            var chordData = {};
-            var refactoredData = [];
-
             var relationshipData = {games: {},
                                     people: {}}
 
@@ -50,9 +59,6 @@
             }
 
             function processGame(game){
-                if(!(game.id in relationshipData)){
-                    relationshipData.games[game.id] = game;
-                } 
                 updateDevelopers(game);
             }
 
@@ -60,6 +66,9 @@
                 giantBombDetail(game.api_detail_url,
                     function(response){
                         var game = response.results;
+                        if(!(game.id in relationshipData)){
+                            relationshipData.games[game.id] = game;
+                        } 
                         var gamePeople = response.results.people;
                         gamePeople.forEach(function(person){
                             if(person.id in relationshipData.people){
@@ -125,13 +134,12 @@
             
             function populateGraph(data){
                 var svg = d3.select("body").append("svg")
-                .attr("width", width)
-                .attr("height", height);
+                .attr("viewBox", "0 0 " + width + " " + height )
 
                 var force = d3.layout.force()
                 .gravity(.05)
-                .distance(200)
-                .charge(-100)
+                .distance(100)
+                .charge(-150)
                 .size([width, height]);
 
                 force.nodes(data.nodes)
@@ -150,6 +158,7 @@
                 .call(force.drag);
 
                 node.append("image")
+                .attr("xlink:href", function(d){if(d.image !== undefined) {return d.image.icon_url}else{return "http://bcdancetucson.aztechsol.com/wp-content/uploads/2014/07/person-icon.png"}})
                 .attr("x", -8)
                 .attr("y", -8)
                 .attr("width", 20)
