@@ -1,0 +1,179 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <style>
+            .link {
+                stroke: #ccc;
+            }
+
+            .node text {
+                pointer-events: none;
+                font: 10px sans-serif;
+            }
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+        <script>
+            //GIANT BOMB DATA GATHERING//
+            var apiKey = '9f81a391077ec72ad493084abc747a5c19ea2d06';
+            var chordData = {};
+            var refactoredData = [];
+
+            var relationshipData = {games: {},
+                                    people: {}}
+
+            function giantBombQuery(query, successCall, failureCall){
+                giantBombJsonp("http://www.giantbomb.com/api/search?api_key="+apiKey+"&format=jsonp&"+query,
+                    successCall,
+                    failureCall);
+            }
+
+            function giantBombDetail(url, successCall, failureCall, params){
+                giantBombJsonp(url+"?api_key="+apiKey+"&format=jsonp&"+params, successCall, failureCall);
+            }
+
+            function giantBombJsonp(restURL, successCall, failureCall) {
+                $.ajax({
+                        url: restURL,
+                        type: "GET",
+                        dataType: "jsonp",
+                        crossDomain:true,
+                        jsonp:"json_callback",
+                        success: successCall,
+                        error: failureCall,
+                });
+            }
+
+            function makeSelection(arr){
+                //TODO ask user to pick, currently just pick first
+                return arr[0];
+            }
+
+            function processGame(game){
+                if(!(game.id in relationshipData)){
+                    relationshipData.games[game.id] = game;
+                } 
+                updateDevelopers(game);
+            }
+
+            function updateDevelopers(game){
+                giantBombDetail(game.api_detail_url,
+                    function(response){
+                        var game = response.results;
+                        var gamePeople = response.results.people;
+                        gamePeople.forEach(function(person){
+                            if(person.id in relationshipData.people){
+                                relationshipData.people[person.id].workedOn.push(game);
+                            }else{
+                                person["workedOn"] = [game];
+                                relationshipData.people[person.id] = person;
+                            }
+                        });
+                    },
+                    function(response){console.log("Error")});
+            }
+
+            function searchGame(gameName){
+                giantBombQuery("query="+gameName+"&resources=game", 
+                    function(games){
+                        processGame(makeSelection(games.results));
+                    }, 
+                    function(result){console.log("Error");});
+            }
+
+            function processPerson(person){
+                giantBombDetail(person.api_detail_url,
+                    function(response){
+                        var games = response.results.games;
+                        games.forEach(function(game){
+                            processGame(game);
+                        });
+                    },
+                    function(response){console.log('Error');});
+            }
+
+            function generateRelations(devName){
+                giantBombQuery("query="+devName+"&resources=person",
+                    function(people){
+                        processPerson(makeSelection(people.results));
+                    },
+                    function(result){console.log('Error');});
+            }
+
+            function submitForm(){
+                generateRelations($('#devName').val());
+            }
+
+            function completedAPICalls(){
+                jsonData = {nodes: [],
+                            links: []}
+                for(var key in relationshipData.games){
+                    jsonData.nodes.push(relationshipData.games[key]);
+                }
+                for(var key in relationshipData.people){
+                    jsonData.nodes.push(relationshipData.people[key]);
+                    relationshipData.people[key]["workedOn"].forEach(function(game){
+                        jsonData.links.push({source: relationshipData.people[key], target: game});
+                    });
+                }
+                populateGraph(jsonData);
+            }
+
+            //D3 GRAPH GENERATION//
+            var width = 960,
+            height = 500
+            
+            function populateGraph(data){
+                var svg = d3.select("body").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+                var force = d3.layout.force()
+                .gravity(.05)
+                .distance(200)
+                .charge(-100)
+                .size([width, height]);
+
+                force.nodes(data.nodes)
+                .links(data.links)
+                .start();
+                
+                var link = svg.selectAll(".link")
+                .data(data.links)
+                .enter().append("line")
+                .attr("class", "link");
+
+                var node = svg.selectAll(".node")
+                .data(data.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .call(force.drag);
+
+                node.append("image")
+                .attr("x", -8)
+                .attr("y", -8)
+                .attr("width", 20)
+                .attr("height", 20);
+
+                node.append("text")
+                .attr("dx", 12)
+                .attr("dy", ".35em")
+                .text(function(d) { return d.name });
+
+                force.on("tick", function() {
+                    link.attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; });
+
+                    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                });
+            }
+       </script>
+    </head>
+    <body>
+        <form onSubmit="submitForm();return false;">
+            <input id="devName" type="text" placeholder="game"/>
+        </form>
+    </body>
+</html>
