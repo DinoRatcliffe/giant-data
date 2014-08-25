@@ -229,6 +229,11 @@
                 .attr("height", 20);
 
                 node.on("mousedown", function(d){d3.event.stopPropagation();});
+                node.on("dblclick", function(d){
+                    d3.event.stopPropagation();
+                    if(!d.developers){
+                        generateRelations(d.name);
+                    }});
 
                 newNodes.append("text")
                 .attr("dx", 12)
