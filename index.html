@@ -31,6 +31,7 @@
             var relationshipData = {games: {},
                                     people: {}}
 
+
             function giantBombQuery(query, successCall, failureCall){
                 giantBombJsonp("http://www.giantbomb.com/api/search?api_key="+apiKey+"&format=jsonp&"+query,
                     successCall,
@@ -66,20 +67,33 @@
                 giantBombDetail(game.api_detail_url,
                     function(response){
                         var game = response.results;
-                        if(!(game.id in relationshipData)){
-                            relationshipData.games[game.id] = game;
-                        } 
-                        var gamePeople = response.results.people;
-                        gamePeople.forEach(function(person){
-                            if(person.id in relationshipData.people){
-                                relationshipData.people[person.id].workedOn.push(game);
-                            }else{
-                                person["workedOn"] = [game];
-                                relationshipData.people[person.id] = person;
-                            }
-                        });
+                        updateNodeLinks(game);
                     },
                     function(response){console.log("Error")});
+            }
+
+            var entityCache = {games: {},
+                              people: {}}
+            var forceData = {nodes: [],
+                             links: []} 
+            function updateNodeLinks(game){
+                if (game.id in entityCache.games){
+                    game = entityCache.games[game.id];
+                }else{
+                    entityCache.games[game.id] = game;
+                    forceData.nodes.push(game);
+                }
+                var people = game.people;
+                people.forEach(function(person){
+                    if (person.id in entityCache.people){
+                        person = entityCache.people[person.id];
+                    }else{
+                        entityCache.people[person.id] = person;
+                        forceData.nodes.push(person);
+                    }
+                    forceData.links.push({source: person, target: game});
+                });
+                refreshGraph();
             }
 
             function searchGame(gameName){
@@ -130,16 +144,69 @@
 
             //D3 GRAPH GENERATION//
             var width = 960,
-            height = 500
+            height = 500;
+
+            var svg, force, link, node;
             
+            window.onload = function(){
+                svg = d3.select("body").append("svg")
+                .attr("viewBox", "0 0 " + width + " " + height )
+
+                force = d3.layout.force()
+                .gravity(.05)
+                .distance(300)
+                .charge(-1300)
+                .size([width, height]);
+
+                force.nodes(forceData.nodes)
+                .links(forceData.links);
+                
+                link = svg.selectAll(".link");
+                node = svg.selectAll(".node");
+
+                force.on("tick", function() {
+                    link.attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; });
+
+                    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                });
+            };
+
+            function refreshGraph(){
+                force.start();
+
+                node = node.data(forceData.nodes);
+                node.enter().append("g")
+                .attr("class", "node")
+                .call(force.drag);
+
+                node.append("image")
+                .attr("xlink:href", function(d){if(d.image !== undefined) {return d.image.icon_url}else{return "http://bcdancetucson.aztechsol.com/wp-content/uploads/2014/07/person-icon.png"}})
+                .attr("x", -8)
+                .attr("y", -8)
+                .attr("width", 20)
+                .attr("height", 20);
+
+                node.append("text")
+                .attr("dx", 12)
+                .attr("dy", ".35em")
+                .text(function(d) { return d.name });
+
+                link = link.data(forceData.links);
+                link.enter().append("line")
+                .attr("class", "link");
+            }
+
             function populateGraph(data){
                 var svg = d3.select("body").append("svg")
                 .attr("viewBox", "0 0 " + width + " " + height )
 
                 var force = d3.layout.force()
                 .gravity(.05)
-                .distance(100)
-                .charge(-150)
+                .distance(300)
+                .charge(-1300)
                 .size([width, height]);
 
                 force.nodes(data.nodes)
@@ -182,7 +249,7 @@
     </head>
     <body>
         <form onSubmit="submitForm();return false;">
-            <input id="devName" type="text" placeholder="game"/>
+            <input id="devName" type="text" placeholder="Developer"/>
         </form>
     </body>
 </html>
