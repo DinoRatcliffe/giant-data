@@ -2,6 +2,21 @@
 <html>
     <head>
         <style>
+            #author {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                margin: .4em;
+                text-decoration: none;
+                color: #fff;
+                font-family: sans-serif;
+                opacity: .1;
+            }
+
+            #author:hover{
+                opacity: .4;
+            }
+
             .giantlogo {
                 background-image: url('images/logo-gb.png');
                 background-size: cover;
@@ -262,6 +277,7 @@
                 <input id="devName" type="text" placeholder="Enter Developer..."/>
             </form>
         </div>
+        <a href="http://dino.io" id="author">Dino Ratcliffe</a>
         <a href="http://giantbomb.com/api">
             <div class="giantlogo"></div>
         </a>
