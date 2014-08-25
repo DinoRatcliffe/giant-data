@@ -182,8 +182,18 @@
                 .attr("class", "node")
                 .call(force.drag);
 
+                node.on("mousedown", function(d){d3.event.stopPropagation();});
+
                 node.append("image")
-                .attr("xlink:href", function(d){if(d.image !== undefined) {return d.image.icon_url}else{return "http://bcdancetucson.aztechsol.com/wp-content/uploads/2014/07/person-icon.png"}})
+                .attr("xlink:href", function(d)
+                {if(d.image) {
+                        if(d.image.icon_url){
+                            return d.image.icon_url;
+                        }else{
+                            return "https://support.us.playstation.com/euf/assets/KCimages/icn/icn_game.gif";
+                        }
+                }else{
+                    return "http://www.websitedevelopersuk.com/images/com_rsmonials/9.png"}})
                 .attr("x", -8)
                 .attr("y", -8)
                 .attr("width", 20)
