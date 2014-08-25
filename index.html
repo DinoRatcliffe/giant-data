@@ -59,6 +59,9 @@
             var relationshipData = {games: {},
                                     people: {}}
 
+            function isGame(obj){
+                return obj.developers;
+            }
 
             function giantBombQuery(query, successCall, failureCall){
                 giantBombJsonp("http://www.giantbomb.com/api/search?api_key="+apiKey+"&format=jsonp&"+query,
@@ -224,11 +227,15 @@
                             return "https://support.us.playstation.com/euf/assets/KCimages/icn/icn_game.gif";
                         }
                }else{
-                    return "http://cdn.flaticon.com/png/256/32816.png"}})
-                .attr("x", -10)
-                .attr("y", -10)
-                .attr("width", 20)
-                .attr("height", 20);
+                   return "http://cdn.flaticon.com/png/256/32816.png"}})
+       .attr("x", function(d){if(isGame(d)) return -50;
+            return -10;})
+                .attr("y", function(d){if(isGame(d)) return -50;
+            return -10;})
+                .attr("width", function(d){if(isGame(d)) return 100;
+            return 20;})
+                .attr("height", function(d){if(isGame(d)) return 100;
+            return 20;});
 
                 node.on("mousedown", function(d){d3.event.stopPropagation();});
                 node.on("dblclick", function(d){
