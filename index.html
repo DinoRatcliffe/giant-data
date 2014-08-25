@@ -138,8 +138,10 @@
                     }else{
                         entityCache.people[person.id] = person;
                         forceData.nodes.push(person);
+                        person.links = 0;
                     }
                     forceData.links.push({source: person, target: game});
+                    person.links += 1;
                 });
                 refreshGraph();
             }
@@ -219,7 +221,8 @@
                     .attr("x2", function(d) { return d.target.x; })
                     .attr("y2", function(d) { return d.target.y; });
 
-                    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; }).attr("fill-opacity", computeOpacity);
+                    node.selectAll("circle").attr("r", computeRadius);
                 });
             };
 
@@ -239,6 +242,22 @@
                 }
             }
 
+            function computeOpacity(data){
+                if (isGame(data)){
+                    return 1;
+                }else{
+                    return data.links * 0.1;
+                }
+            }
+
+            function computeRadius(data){
+                if (isGame(data)){
+                    return selectRadius(data);
+                }else{
+                    return selectRadius(data) + (5 * data.links);
+                }
+            }
+
             function refreshGraph(){
                 force.start();
 
@@ -249,6 +268,7 @@
                 node = node.data(forceData.nodes);
                 var newNodes = node.enter().append("g")
                 .attr("class", "node")
+                .attr("fill-opacity", computeOpacity)
                 .call(force.drag);
 
                 newNodes.append("circle")
