@@ -21,8 +21,26 @@
                 font: 10px sans-serif;
             }
 
-            form {
+            .topbar {
+                width: 100%;
                 position: fixed;
+                background-color: #333;
+                opacity: .4;
+            }
+
+            #devName {
+                border: none;
+                color: #fff;
+                background: transparent;
+                width: 30%;
+            }
+
+            #devName:focus {
+                outline: none;
+            }
+
+            form {
+                margin: .4em;
             }
 
             body {
@@ -218,9 +236,11 @@
        </script>
     </head>
     <body>
-        <form onSubmit="submitForm();return false;">
-            <input id="devName" type="text" placeholder="Developer"/>
-        </form>
+        <div class="topbar">
+            <form onSubmit="submitForm();return false;">
+                <input id="devName" type="text" placeholder="Enter Developer..."/>
+            </form>
+        </div>
         <a href="http://giantbomb.com/api">
             <div class="giantlogo"></div>
         </a>
