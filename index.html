@@ -206,7 +206,7 @@
                 force = d3.layout.force()
                 .gravity(.05)
                 .distance(300)
-                .charge(-3000)
+                .charge(-6000)
                 .size([width, height]);
 
                 force.nodes(forceData.nodes)
@@ -219,7 +219,8 @@
                     link.attr("x1", function(d) { return d.source.x; })
                     .attr("y1", function(d) { return d.source.y; })
                     .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; });
+                    .attr("y2", function(d) { return d.target.y; })
+                    .attr("stroke-opacity", function(d){return computeOpacity(d.source)});
 
                     node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; }).attr("fill-opacity", computeOpacity);
                     node.selectAll("circle").attr("r", computeRadius);
@@ -246,7 +247,7 @@
                 if (isGame(data)){
                     return 1;
                 }else{
-                    return data.links * 0.1;
+                    return data.links * 0.15;
                 }
             }
 
@@ -263,6 +264,7 @@
 
                 link = link.data(forceData.links);
                 link.enter().append("line")
+                .attr("stroke-opacity", function(d){return computeOpacity(d.source);})
                 .attr("class", "link");
 
                 node = node.data(forceData.nodes);
