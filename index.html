@@ -2,6 +2,16 @@
 <html>
     <head>
         <style>
+            .giantlogo {
+                background-image: url('images/logo-gb.png');
+                background-size: cover;
+                width: 6em;
+                height: 4em;
+                margin: 1em;
+                position: fixed;
+                bottom: 0;
+                right: 0;
+            }
             .link {
                 stroke: #ccc;
             }
@@ -192,7 +202,7 @@
                         }else{
                             return "https://support.us.playstation.com/euf/assets/KCimages/icn/icn_game.gif";
                         }
-                }else{
+               }else{
                     return "http://www.websitedevelopersuk.com/images/com_rsmonials/9.png"}})
                 .attr("x", -8)
                 .attr("y", -8)
@@ -211,7 +221,8 @@
         <form onSubmit="submitForm();return false;">
             <input id="devName" type="text" placeholder="Developer"/>
         </form>
-        <div id="chart">
-        </div>
+        <a href="http://giantbomb.com/api">
+            <div class="giantlogo"></div>
+        </a>
     </body>
 </html>
