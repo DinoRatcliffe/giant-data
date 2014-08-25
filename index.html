@@ -127,30 +127,26 @@
                 generateRelations($('#devName').val());
             }
 
-            function completedAPICalls(){
-                jsonData = {nodes: [],
-                            links: []}
-                for(var key in relationshipData.games){
-                    jsonData.nodes.push(relationshipData.games[key]);
-                }
-                for(var key in relationshipData.people){
-                    jsonData.nodes.push(relationshipData.people[key]);
-                    relationshipData.people[key]["workedOn"].forEach(function(game){
-                        jsonData.links.push({source: relationshipData.people[key], target: game});
-                    });
-                }
-                populateGraph(jsonData);
-            }
-
             //D3 GRAPH GENERATION//
             var width = 960,
             height = 500;
 
-            var svg, force, link, node;
+            var svg, force, link, node, zoom, container;
+
+            function zoomed(){
+                container.attr("transform", 'translate('+ d3.event.translate + ')scale(' + d3.event.scale + ')');
+            }
             
             window.onload = function(){
+                zoom = d3.behavior.zoom()
+                .scaleExtent([0.1, 10])
+                .on("zoom", zoomed);
+
                 svg = d3.select("body").append("svg")
                 .attr("viewBox", "0 0 " + width + " " + height )
+                .call(zoom);
+
+                container = svg.append("g");
 
                 force = d3.layout.force()
                 .gravity(.05)
@@ -161,8 +157,8 @@
                 force.nodes(forceData.nodes)
                 .links(forceData.links);
                 
-                link = svg.selectAll(".link");
-                node = svg.selectAll(".node");
+                link = container.selectAll(".link");
+                node = container.selectAll(".node");
 
                 force.on("tick", function() {
                     link.attr("x1", function(d) { return d.source.x; })
@@ -176,6 +172,10 @@
 
             function refreshGraph(){
                 force.start();
+
+                link = link.data(forceData.links);
+                link.enter().append("line")
+                .attr("class", "link");
 
                 node = node.data(forceData.nodes);
                 node.enter().append("g")
@@ -194,56 +194,6 @@
                 .attr("dy", ".35em")
                 .text(function(d) { return d.name });
 
-                link = link.data(forceData.links);
-                link.enter().append("line")
-                .attr("class", "link");
-            }
-
-            function populateGraph(data){
-                var svg = d3.select("body").append("svg")
-                .attr("viewBox", "0 0 " + width + " " + height )
-
-                var force = d3.layout.force()
-                .gravity(.05)
-                .distance(300)
-                .charge(-1300)
-                .size([width, height]);
-
-                force.nodes(data.nodes)
-                .links(data.links)
-                .start();
-                
-                var link = svg.selectAll(".link")
-                .data(data.links)
-                .enter().append("line")
-                .attr("class", "link");
-
-                var node = svg.selectAll(".node")
-                .data(data.nodes)
-                .enter().append("g")
-                .attr("class", "node")
-                .call(force.drag);
-
-                node.append("image")
-                .attr("xlink:href", function(d){if(d.image !== undefined) {return d.image.icon_url}else{return "http://bcdancetucson.aztechsol.com/wp-content/uploads/2014/07/person-icon.png"}})
-                .attr("x", -8)
-                .attr("y", -8)
-                .attr("width", 20)
-                .attr("height", 20);
-
-                node.append("text")
-                .attr("dx", 12)
-                .attr("dy", ".35em")
-                .text(function(d) { return d.name });
-
-                force.on("tick", function() {
-                    link.attr("x1", function(d) { return d.source.x; })
-                    .attr("y1", function(d) { return d.source.y; })
-                    .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; });
-
-                    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-                });
             }
        </script>
     </head>
@@ -251,5 +201,7 @@
         <form onSubmit="submitForm();return false;">
             <input id="devName" type="text" placeholder="Developer"/>
         </form>
+        <div id="chart">
+        </div>
     </body>
 </html>
