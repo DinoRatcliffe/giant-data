@@ -2,6 +2,16 @@
 <html>
     <head>
         <style>
+            .loadingContainer {
+                position: fixed;
+                top: 50%;
+                left: 50%
+            }
+
+            .loadingContainer #loader{
+                display: none;
+            }
+
             .buttonGroup {
                 position: fixed;
                 top: 2em;
@@ -98,6 +108,7 @@
             var apiKey = '9f81a391077ec72ad493084abc747a5c19ea2d06';
             var relationshipData = {games: {},
                                     people: {}}
+            var requestCount = 0;
 
             function isGame(obj){
                 return obj.people;
@@ -120,9 +131,34 @@
                         dataType: "jsonp",
                         crossDomain:true,
                         jsonp:"json_callback",
-                        success: successCall,
+                        success: function(response) {
+                            successCall(response);
+                            decrementRequest()},
                         error: failureCall,
                 });
+                incrementRequest();
+            }
+
+            function incrementRequest() {
+                if (requestCount === 0){
+                    showLoading();
+                }
+                requestCount++;
+            }
+
+            function decrementRequest() {
+                requestCount--;
+                if (requestCount === 0) {
+                    hideLoading();
+                }
+            }
+
+            function showLoading() {
+                $('#loader').show();
+            }
+
+            function hideLoading() {
+                $('#loader').hide();
             }
 
             function makeSelection(arr){
@@ -207,6 +243,7 @@
 
             function submitForm(){
                 generateRelations($('#devName').val());
+                return false;
             }
 
             //D3 GRAPH GENERATION//
@@ -331,10 +368,11 @@
     </head>
     <body>
         <div class="topbar">
-            <form onSubmit="submitForm();return false;">
+            <form onSubmit="return submitForm();">
                 <input id="devName" type="text" placeholder="Enter Developer..."/>
             </form>
         </div>
+        <div class="loadingContainer"><img id="loader" src="images/loading-dark.gif"/></div>
         <div class="buttonGroup"><button onClick="clearNodeLinks()" class="destructive">Clear</button></div>
         <a href="http://dino.io" id="author">Dino Ratcliffe</a>
         <a href="http://giantbomb.com/api">
