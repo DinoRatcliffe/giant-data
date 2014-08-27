@@ -260,7 +260,7 @@
                 zoom = d3.behavior.zoom()
                 .scale(0.3)
                 .translate([480, 250])
-                .scaleExtent([0.1, 10])
+                .scaleExtent([0.01, 10])
                 .on("zoom", zoomed);
 
                 svg = d3.select("body").append("svg")
