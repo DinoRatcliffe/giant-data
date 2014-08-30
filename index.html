@@ -77,6 +77,21 @@
                 opacity: .4;
             }
 
+            .topbar a {
+                float: right;
+                height: 1.5em;
+                margin: .3em;
+                opacity: .5;
+            }
+
+            .topbar a:hover {
+                opacity: 1;
+            }
+
+            .topbar a img {
+                height: 100%;
+            }
+
             #devName {
                 border: none;
                 color: #fff;
@@ -90,6 +105,8 @@
 
             form {
                 margin: .4em;
+                width: 80%;
+                float: left;
             }
 
             body {
@@ -267,6 +284,14 @@
                 .attr("viewBox", "0 0 " + width + " " + height )
                 .call(zoom);
 
+                function updateWindow(){
+                    x = window.innerWidth;
+                    y = window.innerHeight;
+
+                    svg.attr("width", x).attr("height", y);
+                }
+                window.onresize = updateWindow;
+
                 container = svg.append("g");
                 container.attr("transform", 'translate(480, 250)scale(0.3)');
                 allLinks = container.append("g");
@@ -371,11 +396,12 @@
             <form onSubmit="return submitForm();">
                 <input id="devName" type="text" placeholder="Enter Persons Name..." autocomplete="off"/>
             </form>
+            <a href="http://github.com/DinoRatcliffe/giant-data" target="_blank"><img src="images/GitHub-Mark-Light-32px.png"/></a>
         </div>
         <div class="loadingContainer"><img id="loader" src="images/loading-dark.gif"/></div>
         <div class="buttonGroup"><button onClick="clearNodeLinks()" class="destructive">Clear</button></div>
-        <a href="http://dino.io" id="author">Dino Ratcliffe</a>
-        <a href="http://giantbomb.com/api">
+        <a href="http://dino.io" id="author" target="_blank">Dino Ratcliffe</a>
+        <a href="http://giantbomb.com" target="_blank">
             <div class="giantlogo"></div>
         </a>
     </body>
